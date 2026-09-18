@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  beget-auth-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: beget-auth-mcp
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${PORT:-8080}
+      - MCP_API_KEY=${MCP_API_KEY}
+      - BEGET_API_BASE=${BEGET_API_BASE:-https://api.beget.com}
+      - BEGET_LOGIN=${BEGET_LOGIN:-}
+      - BEGET_PASSWORD=${BEGET_PASSWORD:-}
+      - ALLOWED_CIDRS=${ALLOWED_CIDRS:-}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - MAX_REQUEST_SIZE=${MAX_REQUEST_SIZE:-1mb}
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-60000}
+      - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-100}
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/healthz', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    networks:
+      - beget-network
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp:noexec,nosuid,nodev,size=50m
+
+networks:
+  beget-network:
+    driver: bridge
