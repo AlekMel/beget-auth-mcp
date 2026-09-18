@@ -16,7 +16,7 @@ RUN npm run build \
 
 FROM node:20-alpine
 
-RUN apk add --no-cache dumb-init \
+RUN apk add --no-cache dumb-init wget \
  && addgroup -g 1001 -S nodejs \
  && adduser -S nodejs -u 1001
 
@@ -32,8 +32,8 @@ USER nodejs
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8080/healthz', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=5 \
+  CMD wget -qO- http://127.0.0.1:8080/healthz >/dev/null || exit 1
 
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "dist/index.js"]
