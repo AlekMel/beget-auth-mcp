@@ -10,5 +10,4 @@ coverage
 .DS_Store
 *.test.ts
 jest.config.js
-tsconfig.json
 .eslintrc.js
